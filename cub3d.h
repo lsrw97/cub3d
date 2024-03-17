@@ -6,7 +6,7 @@
 /*   By: eelisaro <eelisaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/10/28 13:21:32 by eelisaro          #+#    #+#             */
-/*   Updated: 2024/03/14 22:41:55 by eelisaro         ###   ########.fr       */
+/*   Updated: 2024/03/16 17:36:07 by eelisaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,11 +38,10 @@
 
 typedef struct s_ray
 {
+	int		id;
 	double	x;
 	double	y;
 	double	distance;
-	double	last_point_x;
-	double	last_point_y;
 	double	wallheight;
 } t_ray;
 

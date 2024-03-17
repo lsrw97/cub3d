@@ -6,13 +6,14 @@
 /*   By: eelisaro <eelisaro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/11 16:30:56 by eelisaro          #+#    #+#             */
-/*   Updated: 2024/03/14 22:44:40 by eelisaro         ###   ########.fr       */
+/*   Updated: 2024/03/17 14:19:58 by eelisaro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "cub3d.h"
 #include <fcntl.h>
 #include <math.h>
+#include <unistd.h>
 
 int	freeexit(t_data *data)
 {
@@ -139,37 +140,27 @@ void	printmap(t_data *data)
 	data->map->y = 0;
 }
 
-double degreeToRadians(int degree)
+double degreeToRadians(double degree)
 {
 	M_PI;
-	return ((double)degree * M_PI / 180);
+	return (degree * M_PI / 180);
 }
 
 int	printline(t_data *data)
 {
 	int	wall = 0;
-	int	nextWall = 0;
-	// int	x;
-	// int	y;
-	// printf("%d, %d, %d, %f, %f\n", (int)floor(ray.y), (int)floor(ray.x), wall, rayCos, raySin);
-	int i = 0;
 
 	while(wall == 0)
 	{
+		data->player->rayCos = cos(degreeToRadians(data->player->angle));
+		data->player->raySin = sin(degreeToRadians(data->player->angle));
 		data->player->ray.x += data->player->rayCos;
 		data->player->ray.y += data->player->raySin;
-		// x = data->player->ray.x + data->player->rayCos;
-		// y = data->player->ray.y + data->player->raySin;
 		wall = data->map->strmap[(int)floor(data->player->ray.y) / IMG_SIZE][(int)floor(data->player->ray.x) / IMG_SIZE] - 48;
-		// printf("%f, %f, \n", data->player->ray.x, data->player->ray.y);
-		// printf("%d, %d, \n", (int)floor(data->player->ray.x) % IMG_SIZE, (int)floor(data->player->ray.y) % IMG_SIZE);
-		// printf("%d, %d, %d, %d, %d\n", (int)floor(data->player->ray.y) / IMG_SIZE, (int)floor(data->player->ray.x) / IMG_SIZE, wall, data->player->rayCos, data->player->raySin);
 		my_mlx_pixel_put(data, (int)data->player->ray.x, (int)data->player->ray.y, 0xFFFF0000);
 	}
-	data->player->ray.last_point_x = data->player->ray.x;
-	data->player->ray.last_point_y = data->player->ray.y;
+		// printf("ray.x: %f, ray.y: %f, angle: %f, raySin: %f, rayCos: %f\n", data->player->ray.x, data->player->ray.y, data->player->angle, data->player->raySin, data->player->rayCos);
 	mlx_put_image_to_window(data->mlx, data->mlx_win, data->img, 0, 0);
-
 }
 
 void	init_map(char *file, t_data *data)
@@ -179,12 +170,13 @@ void	init_map(char *file, t_data *data)
 	data->map->y = 0;
 	data->map->px = -1;
 	data->map->strmap = getmap(file);
-	data->map->mw = ft_strlen(data->map->strmap[0]);
-	data->map->mh = getmapy(data->map->strmap);
-	data->mlx_win = mlx_new_window(data->mlx, data->map->mw * IMG_SIZE, data->map->mh * IMG_SIZE, "square");
-	data->img = mlx_new_image(data->mlx, data->map->mw * IMG_SIZE, data->map->mh * IMG_SIZE);
+	data->map->mw = ft_strlen(data->map->strmap[0]) * IMG_SIZE;
+	data->map->mh = getmapy(data->map->strmap) * IMG_SIZE;
+	printf("llllllllllllllllllllllllllllllllllllllllllllllllllllllll\n");
+	data->mlx_win = mlx_new_window(data->mlx, data->map->mw, data->map->mh, "square");
+	data->img = mlx_new_image(data->mlx, data->map->mw, data->map->mh);
 	data->addr = mlx_get_data_addr(data->img, &data->bpp, &data->ll, &data->e);
-	printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
+	// printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
 	printmap(data);
 	// data->map = map;
 }
@@ -193,30 +185,30 @@ void	moveright(t_data *data)
 {
 	data->player->ray.x = data->player->x;
 	data->player->ray.y = data->player->y;
-	data->player->angle++;
+	data->player->angle += 20;
 	data->player->rayCos = cos(degreeToRadians(data->player->angle));
 	data->player->raySin = sin(degreeToRadians(data->player->angle));
-	printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
+	// printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
 }
 
 void	moveleft(t_data *data)
 {
 	data->player->ray.x = data->player->x;
 	data->player->ray.y = data->player->y;
-	data->player->angle--;
+	data->player->angle -= 20;
 	data->player->rayCos = cos(degreeToRadians(data->player->angle));
 	data->player->raySin = sin(degreeToRadians(data->player->angle));
-	printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
+	// printf("cos: %f, sin: %f\n", cos(degreeToRadians(data->player->angle)), sin(degreeToRadians(data->player->angle)));
 }
 
 void	movefront(t_data *data)
 {
-	data->player->y += sin(degreeToRadians(data->player->angle));
-	data->player->x += cos(degreeToRadians(data->player->angle));
+	data->player->y += sin(degreeToRadians(data->player->angle)) * 10;
+	data->player->x += cos(degreeToRadians(data->player->angle)) * 10;
 	data->player->ray.x = data->player->x;
 	data->player->ray.y = data->player->y;
-	printf("%f, %f, %f\n", data->player->ray.x, data->player->x, data->player->rayCos);
-	printf("cos: %f, sin: %f\n", cos(degreeToRadians(20)), sin(degreeToRadians(20)));
+	// printf("%f, %f, %f\n", data->player->ray.x, data->player->x, data->player->rayCos);
+	// printf("cos: %f, sin: %f\n", cos(degreeToRadians(20)), sin(degreeToRadians(20)));
 }
 
 void	moveback(t_data *data)
@@ -226,38 +218,50 @@ void	moveback(t_data *data)
 	data->player->ray.x = data->player->x;
 	data->player->ray.y = data->player->y;
 	printf("%f, %f, %f\n", data->player->ray.x, data->player->x, data->player->rayCos);
-	printf("cos: %f, sin: %f\n", cos(degreeToRadians(20)), sin(degreeToRadians(20)));
+	// printf("cos: %f, sin: %f\n", cos(degreeToRadians(20)), sin(degreeToRadians(20)));
 }
 
-double calc_length(t_data *data)
+double calc_distance(t_data *data)
 {
-	int dx = abs(data->player->x - data->player->ray.last_point_x);
-	int dy = abs(data->player->y - data->player->ray.last_point_y);
-	data->player->ray.distance = sqrt(pow(dx, 2) + pow(dy, 2));
-	return sqrt(pow(dx, 2) + pow(dy, 2));
+	data->player->ray.distance = sqrt(pow(data->player->x - data->player->ray.x, (double)2) + pow(data->player->y - data->player->ray.y, (double)2));
+	printf("\ndistance: %f, x %f, rx %f, y %f, ry %f\n\n", data->player->ray.distance, data->player->x, data->player->ray.x, data->player->y, data->player->ray.y);
+	return data->player->ray.distance;
 }
 
 double	calc_wall_height(t_data *data)
 {
-	data->player->ray.wallheight = data->player->ray.wallheight = floor(HALFHEIGHT / data->player->ray.distance);
+	data->player->ray.wallheight = floor((5*IMG_SIZE) / data->player->ray.distance);
+	printf("Wallheight: %f, mapHeight: %f\n", data->player->ray.wallheight, data->map->mh);
 	return data->player->ray.wallheight;
+}
+
+void	print_3d_line(t_data *data)
+{
+	int	y;
+
+	y = -1;
+	while (!isinf(data->player->ray.wallheight) && ++y < data->player->ray.wallheight)
+	{
+		printf("print3dLine: x: %d, y: %d", (int)data->player->ray.id, data->map->mh / 2 - data->player->ray.wallheight / 2 + y);
+		my_mlx_pixel_put(data, (int)data->player->ray.id, data->map->mh / 2 - data->player->ray.wallheight / 2 + y, 0xFF00FF00);
+	}
 }
 
 void	shoot_rays(t_data *data)
 {
-	int rayCount = 0;
+	data->player->ray.id = 0;
 	double angle = data->player->angle;
 
-	while(rayCount < WIN_WIDTH)
+	while(data->player->ray.id < data->map->mw)
 	{
 		data->player->ray.x = data->player->x;
 		data->player->ray.y = data->player->y;
 		data->player->angle += RAYCAST_INCREMENT_ANGLE;
-		data->player->rayCos = cos(degreeToRadians(data->player->angle));
-		data->player->raySin = sin(degreeToRadians(data->player->angle));
-		printf("%d, x: %f, y: %f, angle: %f, %f\n", rayCount, data->player->x, data->player->y, data->player->angle, RAYCAST_INCREMENT_ANGLE);
 		printline(data);
-		rayCount++;
+		calc_distance(data);
+		calc_wall_height(data);
+		print_3d_line(data);
+		data->player->ray.id++;
 	}
 	data->player->angle = angle;
 	mlx_put_image_to_window(data->mlx, data->mlx_win, data->img, 0, 0);
@@ -282,8 +286,7 @@ int	movement(int keycode, t_data *data)
 	printmap(data);
 	shoot_rays(data);
 	// printline(data);
-	printf("%f. %f\n", data->player->ray.last_point_x, data->player->ray.last_point_y);
-	printf("length: %f, wallheight: %f\n\n", calc_length(data), calc_wall_height(data));
+	// printf("length: %f, wallheight: %f\n\n", calc_distance(data), calc_wall_height(data));
 }
 
 void	init_player(t_data *data)
@@ -299,8 +302,8 @@ void	init_player(t_data *data)
 	data->player->ray = ray;
 	printf("%p\n", data->map);
 	data->player->dir = 1;
-	data->player->ray.x = 100;
-	data->player->ray.y = 66;
+	data->player->ray.x = data->player->x;
+	data->player->ray.y = data->player->y;
 	printline(data);
 }
 
